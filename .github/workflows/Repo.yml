@@ -1,0 +1,35 @@
+name: Repo Dispatcher
+
+on:
+  schedule:
+    - cron: 55 */4 * * *
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install aggregate whois jq
+
+    - name: Update Rules
+      env:
+        URL: ${{secrets.URL}}
+      run: |
+        chmod +x update
+        ./update
+
+    - name: Delete workflow runs
+      uses: sirpdboy/delete-workflow-runs@main
+      with:
+        retain_min: 0
+        keep_minimum_runs: 0
+        
